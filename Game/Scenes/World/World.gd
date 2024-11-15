@@ -57,8 +57,13 @@ var server_peers_start_cards_tween_done: Array[int] = []
 @rpc("call_local")
 func update_player_turn(p: PLAYER) -> void:
 	synced_player_turn = p
-	hud.update_title(player == p)
-	
+	print("Turn updated to: ", "Player ONE" if p == PLAYER.ONE else "Player TWO")
+	# Update HUD for each player based on whether it's their turn
+	if player == PLAYER.ONE:
+		hud.update_title(p == PLAYER.ONE)
+	elif player == PLAYER.TWO:
+		hud.update_title(p == PLAYER.TWO)
+
 @rpc("any_peer")
 func intro_done_server() -> void:
 	if not multiplayer.is_server(): return
@@ -563,30 +568,45 @@ func notify_selection_made() -> void:
 		opponent_has_selected = player_1_selection != MARKET_SELECTION.NONE
 	
 	hud.update_market_status(opponent_has_selected)
-
-# Modified version of your existing card_played_server
 @rpc("any_peer")
 func card_played_server() -> void:
 	if not multiplayer.is_server(): return
 	
 	var id = multiplayer.get_remote_sender_id()
-	var current_player_selection = MARKET_SELECTION.NONE
+	print("Card played by peer: ", id)
+	print("Current turn: ", "Player ONE" if synced_player_turn == PLAYER.ONE else "Player TWO")
+	print("Player 1 ID: ", player_1_id)
+	print("Player 2 ID: ", player_2_id)
 	
+	# Verify correct player's turn
+	
+	# Get current player's market selection
+	var current_player_selection = MARKET_SELECTION.NONE
 	if id == player_1_id:
 		current_player_selection = player_1_selection
 	elif id == player_2_id:
 		current_player_selection = player_2_selection
 		
+	# Remind about market selection if needed
 	if current_player_selection == MARKET_SELECTION.NONE:
 		remind_market_selection.rpc_id(id)
-		return
-		
+
+	
+	# Switch turns
 	if synced_player_turn == PLAYER.ONE:
+		print("Switching turn to Player TWO")
 		update_player_turn.rpc(PLAYER.TWO)
-		print("Updating player turn to player 2")
 	elif synced_player_turn == PLAYER.TWO:
+		print("Switching turn to Player ONE")
 		update_player_turn.rpc(PLAYER.ONE)
-		print("Updating player turn to player 1")
+	
+	recalculate_scores_server()
+
+# Add this for debugging
+func _on_multiplayer_spawned():
+	print("Player role: ", "ONE" if player == PLAYER.ONE else "TWO" if player == PLAYER.TWO else "SERVER")
+	print("Player 1 ID: ", player_1_id)
+	print("Player 2 ID: ", player_2_id)
 
 @rpc
 func remind_market_selection() -> void:
