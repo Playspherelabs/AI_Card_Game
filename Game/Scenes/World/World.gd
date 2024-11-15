@@ -401,7 +401,7 @@ func recalculate_scores_server() -> void:
 	var p2_score = get_hand_score(player_2_hand)
 	update_scores.rpc(p1_score, p2_score)
 	
-	if deck.get_children().size() == 0:
+	if deck.get_children().size() <= 12:
 		print("Game over")
 		var text: String = "It's a tie!"
 		
@@ -445,7 +445,7 @@ func show_winner_dialog(dialog_text: String) -> void:
 func add_card_to_hand(hand: Node3D, zone: Global.CARD_ZONE) -> void:
 	if deck.get_child_count() == 0:
 		return
-	hud.get_deck_left(deck.get_child_count()-1)	
+	hud.get_deck_left(deck.get_child_count()-1-12)	
 	var card = deck.get_child(deck.get_child_count() - 1)
 	switch_parents(card, hand)
 	card.zone = zone
