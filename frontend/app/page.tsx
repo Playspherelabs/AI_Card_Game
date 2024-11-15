@@ -295,6 +295,7 @@ export default function ChainSmashPage() {
                 <h2 className="text-xl font-bold mb-4">Game Details</h2>
                 <div className="space-y-2">
                   <p><strong>Player 1:</strong> {gameDetails.player1}</p>
+                  <p><strong>Toss Winner:</strong> {gameDetails.tossWinner}</p>
                 </div>
               </div>
             )}

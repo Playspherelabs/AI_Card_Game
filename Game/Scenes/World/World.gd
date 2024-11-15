@@ -34,7 +34,15 @@ var player_2_hand: Node3D ## either my_hand or opponent_hand
 var player: PLAYER = PLAYER.SERVER ## Set when world is created by the server
 var player_1_id: int
 var player_2_id: int
+enum MARKET_SELECTION {
+	NONE,
+	BULL,
+	BEAR
+}
+var game_conceded: bool = false
 
+var player_1_selection: MARKET_SELECTION = MARKET_SELECTION.NONE
+var player_2_selection: MARKET_SELECTION = MARKET_SELECTION.NONE
 var is_rendering_hand_animating = false
 var is_table_select_animating = false
 var intro_done = false
@@ -76,15 +84,6 @@ func start_cards_tween_done_server():
 		update_player_turn.rpc(PLAYER.ONE)
 		recalculate_scores_server()
 		
-@rpc("any_peer")
-func card_played_server() -> void:
-	if not multiplayer.is_server(): return
-	if synced_player_turn == PLAYER.ONE:
-		update_player_turn.rpc(PLAYER.TWO)
-		print("Updating player turn to player 2")
-	elif synced_player_turn == PLAYER.TWO:
-		update_player_turn.rpc(PLAYER.ONE)
-		print("Updating player turn to player 1")
 		
 func _ready():
 	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
@@ -106,6 +105,32 @@ func _ready():
 		camera.current = false
 		
 	create_dropzones()
+	hud.bull_selected.connect(_on_bull_selected)
+	hud.bear_selected.connect(_on_bear_selected)
+	hud.concede_requested.connect(_on_concede_requested)
+
+func _on_bull_selected() -> void:
+	if player == PLAYER.SERVER: return
+	make_selection_server.rpc_id(1, MARKET_SELECTION.BULL)
+
+func _on_bear_selected() -> void:
+	if player == PLAYER.SERVER: return
+	make_selection_server.rpc_id(1, MARKET_SELECTION.BEAR)
+
+func _on_concede_requested() -> void:
+	if player == PLAYER.SERVER: return
+	concede_game_server.rpc_id(1)
+
+@rpc("any_peer")
+func concede_game_server() -> void:
+	if not multiplayer.is_server(): return
+	
+	var id = multiplayer.get_remote_sender_id()
+	var winner_id = player_2_id if id == player_1_id else player_1_id
+	game_conceded = true
+	show_winner_dialog.rpc("%s wins by concession!" % synced_peer_name_map[winner_id])
+	await get_tree().create_timer(2.0).timeout
+	game_over.emit()
 	
 func create_dropzones() -> void:
 	for i in range(3):
@@ -214,8 +239,8 @@ func _on_switch_cards_dialog_confirmed():
 func show_dialog() -> void:
 	var hand_card = my_hand.find_child(Global.selected_hand_card_name, true, false)
 	var table_card = table_cards.find_child(Global.selected_table_card_name, true, false)
-	switch_cards_dialog.dialog_text = "Are you sure you would like to switch '%s' with '%s'?" % [hand_card.card_resource.title, table_card.card_resource.title]
-	switch_cards_dialog.show()
+	##switch_cards_dialog.dialog_text = "Are you sure you would like to switch '%s' with '%s'?" % [hand_card.card_resource.title, table_card.card_resource.title]
+	##switch_cards_dialog.show()
 
 func on_card_select(card: Node3D) -> void:
 	if card.zone == Global.CARD_ZONE.DECK:
@@ -386,6 +411,9 @@ func switch_card_server(table_card_name: String, hand_card_name: String) -> void
 	print("Peer %s has switched card %s with card on table %s" % [id, hand_card_name, table_card_name])
 	## switch_card_client.rpc(table_card_name, hand_card_name)
 
+
+
+
 @rpc
 func update_scores(p1_score: int, p2_score: int) -> void:
 	if player == PLAYER.ONE:
@@ -401,18 +429,51 @@ func recalculate_scores_server() -> void:
 	var p2_score = get_hand_score(player_2_hand)
 	update_scores.rpc(p1_score, p2_score)
 	
-	if deck.get_children().size() <= 12:
-		print("Game over")
-		var text: String = "It's a tie!"
+	if deck.get_child_count() <= 12:
+		print("Game over")	
+		if game_conceded:
+			return
+			
+		if player_1_selection == MARKET_SELECTION.NONE or player_2_selection == MARKET_SELECTION.NONE:
+			show_winner_dialog.rpc("Game over but market selections incomplete!")
+			await get_tree().create_timer(2.0).timeout
+			game_over.emit()
+			return
+			
+		var is_same_selection = player_1_selection == player_2_selection
+		var is_bull_market: bool
 		
-		if p1_score > p2_score:
-			text = "'%s' wins!" % synced_peer_name_map.get(player_1_id)
-		elif p2_score > p1_score:
-			text = "'%s' wins!" % synced_peer_name_map.get(player_2_id)
+		if is_same_selection:
+			is_bull_market = player_1_selection == MARKET_SELECTION.BULL
+		else:
+			is_bull_market = randf() > 0.5
 		
-		show_winner_dialog.rpc(text)
+		var winner_text = ""
+		if is_bull_market:
+			if p1_score > p2_score:
+				winner_text = "%s wins in Bull Market!" % synced_peer_name_map[player_1_id]
+			elif p2_score > p1_score:
+				winner_text = "%s wins in Bull Market!" % synced_peer_name_map[player_2_id]
+			else:
+				winner_text = "It's a tie in Bull Market!"
+		else:
+			if p1_score < p2_score:
+				winner_text = "%s wins in Bear Market!" % synced_peer_name_map[player_1_id]
+			elif p2_score < p1_score:
+				winner_text = "%s wins in Bear Market!" % synced_peer_name_map[player_2_id]
+			else:
+				winner_text = "It's a tie in Bear Market!"
+		
+		show_winner_dialog.rpc(winner_text)
 		await get_tree().create_timer(2.0).timeout
 		game_over.emit()
+
+func reset_game_state() -> void:
+	player_1_selection = MARKET_SELECTION.NONE
+	player_2_selection = MARKET_SELECTION.NONE
+	game_conceded = false
+	hud.reset_market_ui()
+
 
 func get_hand_score(hand: Node3D) -> int:
 	var resources = hand.get_children().map(func (child): return child.card_resource)
@@ -477,6 +538,124 @@ func render_hand(hand: Node3D) -> void:
 
 	parallel.done.connect(func(): is_rendering_hand_animating = false)
 	parallel.start()
+
+@rpc("any_peer")
+func make_selection_server(selection: MARKET_SELECTION) -> void:
+	if not multiplayer.is_server(): return
+	
+	var id = multiplayer.get_remote_sender_id()
+	if selection not in [MARKET_SELECTION.BULL, MARKET_SELECTION.BEAR]:
+		return
+		
+	if id == player_1_id:
+		player_1_selection = selection
+	elif id == player_2_id:
+		player_2_selection = selection
+	
+	notify_selection_made.rpc()
+
+@rpc("call_local")
+func notify_selection_made() -> void:
+	var opponent_has_selected = false
+	if player == PLAYER.ONE:
+		opponent_has_selected = player_2_selection != MARKET_SELECTION.NONE
+	else:
+		opponent_has_selected = player_1_selection != MARKET_SELECTION.NONE
+	
+	hud.update_market_status(opponent_has_selected)
+
+# Modified version of your existing card_played_server
+@rpc("any_peer")
+func card_played_server() -> void:
+	if not multiplayer.is_server(): return
+	
+	var id = multiplayer.get_remote_sender_id()
+	var current_player_selection = MARKET_SELECTION.NONE
+	
+	if id == player_1_id:
+		current_player_selection = player_1_selection
+	elif id == player_2_id:
+		current_player_selection = player_2_selection
+		
+	if current_player_selection == MARKET_SELECTION.NONE:
+		remind_market_selection.rpc_id(id)
+		return
+		
+	if synced_player_turn == PLAYER.ONE:
+		update_player_turn.rpc(PLAYER.TWO)
+		print("Updating player turn to player 2")
+	elif synced_player_turn == PLAYER.TWO:
+		update_player_turn.rpc(PLAYER.ONE)
+		print("Updating player turn to player 1")
+
+@rpc
+func remind_market_selection() -> void:
+	hud.show_market_selection_reminder()
+
+
+@rpc("call_local")
+func update_selections(p1_sel: MARKET_SELECTION, p2_sel: MARKET_SELECTION) -> void:
+	player_1_selection = p1_sel
+	player_2_selection = p2_sel
+	
+	var my_selection = MARKET_SELECTION.NONE
+	var opponent_selection = MARKET_SELECTION.NONE
+	
+	if player == PLAYER.ONE:
+		my_selection = p1_sel
+		opponent_selection = p2_sel
+	else:
+		my_selection = p2_sel
+		opponent_selection = p1_sel
+	
+	var my_selection_text = get_selection_text(my_selection)
+	var opponent_selection_text = get_selection_text(opponent_selection)
+	
+	if opponent_selection != MARKET_SELECTION.NONE:
+		hud.update_market_selection(my_selection_text, opponent_selection_text)
+	else:
+		hud.update_market_selection(my_selection_text)
+
+func get_selection_text(selection: MARKET_SELECTION) -> String:
+	match selection:
+		MARKET_SELECTION.BULL: return "BULL"
+		MARKET_SELECTION.BEAR: return "BEAR"
+		_: return "NONE"
+
+@rpc("call_local")
+func determine_market_outcome() -> void:
+	var is_same_selection = player_1_selection == player_2_selection
+	var is_bull_market: bool
+	
+	if is_same_selection:
+		is_bull_market = player_1_selection == MARKET_SELECTION.BULL
+	else:
+		is_bull_market = randf() > 0.5
+	
+	apply_market_outcome(is_bull_market)
+
+func apply_market_outcome(is_bull_market: bool) -> void:
+	var p1_score = get_hand_score(player_1_hand)
+	var p2_score = get_hand_score(player_2_hand)
+	
+	var winner_text = ""
+	if is_bull_market:
+		if p1_score > p2_score:
+			winner_text = "%s wins (Bull Market - Higher Score)" % synced_peer_name_map[player_1_id]
+		elif p2_score > p1_score:
+			winner_text = "%s wins (Bull Market - Higher Score)" % synced_peer_name_map[player_2_id]
+		else:
+			winner_text = "It's a tie!"
+	else:
+		if p1_score < p2_score:
+			winner_text = "%s wins (Bear Market - Lower Score)" % synced_peer_name_map[player_1_id]
+		elif p2_score < p1_score:
+			winner_text = "%s wins (Bear Market - Lower Score)" % synced_peer_name_map[player_2_id]
+		else:
+			winner_text = "It's a tie!"
+	
+	show_winner_dialog.rpc(winner_text)
+
 
 
 func _on_game_over_dialog_confirmed():

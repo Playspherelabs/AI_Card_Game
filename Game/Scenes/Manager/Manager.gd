@@ -104,6 +104,7 @@ func on_game_over() -> void:
 		main_menu_ui.enable_join_btn()
 		main_menu_ui.cancel_btn.hide()
 		main_menu_ui.show()
+		room.show()
 	world.queue_free()
 
 func on_peer_connected_to_server(id: int) -> void:

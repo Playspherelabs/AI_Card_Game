@@ -5,7 +5,7 @@
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vjrv3"]
 
-[node name="HUD" type="Control" node_paths=PackedStringArray("title_label", "player_1_label", "player_2_label", "turn_label")]
+[node name="HUD" type="Control" node_paths=PackedStringArray("title_label", "player_1_label", "player_2_label", "turn_label", "bull_button", "bear_button", "market_label", "concede_button", "select_market_dialog")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -21,6 +21,11 @@ title_label = NodePath("Container/Panel/Panel/Title")
 player_1_label = NodePath("Container/HBoxContainer/MarginContainer/Player1NameScore")
 player_2_label = NodePath("Container/HBoxContainer/MarginContainer2/Player2NameScore")
 turn_label = NodePath("BoxContainer/Panel/Cards")
+bull_button = NodePath("Container/HBoxContainer2/Higher")
+bear_button = NodePath("Container/HBoxContainer2/Lower")
+market_label = NodePath("Container/HBoxContainer2/Label")
+concede_button = NodePath("Container/HBoxContainer2/Concede")
+select_market_dialog = NodePath("AcceptDialog")
 
 [node name="Container" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -106,6 +111,9 @@ horizontal_alignment = 2
 layout_mode = 2
 alignment = 2
 
+[node name="Label" type="Label" parent="Container/HBoxContainer2"]
+layout_mode = 2
+
 [node name="Concede" type="Button" parent="Container/HBoxContainer2"]
 layout_mode = 2
 text = "Concede"
@@ -142,3 +150,6 @@ theme_override_font_sizes/font_size = 24
 text = "Deck Left: "
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="AcceptDialog" type="AcceptDialog" parent="."]
+size = Vector2i(100, 146)
