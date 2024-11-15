@@ -1,0 +1,164 @@
+[gd_scene load_steps=8 format=3 uid="uid://qqr31gwogfkg"]
+
+[ext_resource type="Script" path="res://Scenes/MainMenuUI/MainMenuUI.gd" id="1_4kj3h"]
+[ext_resource type="Theme" uid="uid://di0p2ll65b4pb" path="res://Theme.tres" id="1_8t26l"]
+[ext_resource type="PackedScene" uid="uid://d1fwtjc2r0xh6" path="res://Assets/Rooms/isometric_japanese_tea_room.glb" id="3_40oes"]
+[ext_resource type="PackedScene" uid="uid://dsf7o53covagc" path="res://cyberpunkroom.tscn" id="4_6n8op"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1ofmq"]
+sky_top_color = Color(0.329412, 0.364706, 0.909804, 1)
+sky_horizon_color = Color(0.945098, 0.819608, 0.917647, 1)
+ground_bottom_color = Color(0.0823529, 0.105882, 0.192157, 1)
+ground_horizon_color = Color(0.0823529, 0.431373, 0.701961, 1)
+
+[sub_resource type="Sky" id="Sky_rgowl"]
+sky_material = SubResource("ProceduralSkyMaterial_1ofmq")
+
+[sub_resource type="Environment" id="Environment_7ef0f"]
+background_mode = 2
+sky = SubResource("Sky_rgowl")
+sky_custom_fov = 91.8
+ambient_light_source = 3
+tonemap_mode = 2
+glow_enabled = true
+glow_intensity = 0.4
+glow_bloom = 0.1
+fog_enabled = true
+fog_mode = 1
+fog_light_color = Color(0.309648, 0.202977, 0.934474, 1)
+fog_density = 1.0
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.1132
+
+[node name="MainMenuUI" type="Control" node_paths=PackedStringArray("name_input", "join_btn", "cancel_btn", "status_label", "camera_container")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme = ExtResource("1_8t26l")
+script = ExtResource("1_4kj3h")
+name_input = NodePath("MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/NameInput")
+join_btn = NodePath("MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/JoinServerBtn")
+cancel_btn = NodePath("MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/CancelJoinServerBtn")
+status_label = NodePath("MarginContainer/VBoxContainer/VBoxContainer/StatusLabel")
+camera_container = NodePath("Menu3D/CameraContainer")
+rotation_speed = 0.02
+
+[node name="ColorRect" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.85098, 0.85098, 0.85098, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 88.0
+offset_bottom = -64.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 100
+theme_override_constants/margin_right = 100
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("1_8t26l")
+theme_override_colors/font_shadow_color = Color(0.85098, 0.533333, 0.870588, 1)
+theme_override_constants/shadow_offset_x = 5
+theme_override_constants/shadow_offset_y = 5
+theme_override_constants/shadow_outline_size = 3
+theme_override_font_sizes/font_size = 80
+text = "Emoji Empire"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 6
+theme_override_constants/separation = 40
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "
+"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="NameInput" type="LineEdit" parent="MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Name..."
+
+[node name="JoinServerBtn" type="Button" parent="MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Join Server"
+
+[node name="CancelJoinServerBtn" type="Button" parent="MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Cancel"
+
+[node name="StatusLabel" type="Label" parent="MarginContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Loading..."
+
+[node name="CreateServerBtn" type="Button" parent="MarginContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 10
+theme_override_font_sizes/font_size = 20
+text = "Create Server (debug only)"
+
+[node name="FooterLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 10
+theme_override_font_sizes/font_size = 20
+text = "Game By @Argenestel"
+horizontal_alignment = 1
+
+[node name="Menu3D" type="Node3D" parent="."]
+
+[node name="Room" parent="Menu3D" instance=ExtResource("3_40oes")]
+transform = Transform3D(1, 0, 0.000698132, 0, 1, 0, -0.000698132, 0, 1, 0.0119646, 1.19209e-07, -0.0942118)
+visible = false
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Menu3D"]
+environment = SubResource("Environment_7ef0f")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="Menu3D"]
+transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 7.51694, 11.0356, 0)
+shadow_enabled = true
+
+[node name="CameraContainer" type="Node3D" parent="Menu3D"]
+transform = Transform3D(1, 0, -1.65083e-12, 0, 1, 0, -8.79187e-12, 0, 1, 2.08165e-12, 2.864, 2.08165e-12)
+
+[node name="Camera3D" type="Camera3D" parent="Menu3D/CameraContainer"]
+transform = Transform3D(0.765819, -0.214518, 0.606221, 0.0191298, 0.949901, 0.311967, -0.642772, -0.227313, 0.731555, 1.5456, -1.42171, 1.73185)
+current = true
+
+[node name="CyberPunkRoom" parent="Menu3D" instance=ExtResource("4_6n8op")]
+
+[connection signal="text_changed" from="MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/NameInput" to="." method="_on_name_input_text_changed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/JoinServerBtn" to="." method="_on_join_server_btn_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/CancelJoinServerBtn" to="." method="_on_cancel_join_server_btn_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/VBoxContainer/CreateServerBtn" to="." method="_on_create_server_btn_pressed"]

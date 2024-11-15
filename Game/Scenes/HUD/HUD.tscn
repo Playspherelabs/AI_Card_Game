@@ -1,0 +1,127 @@
+[gd_scene load_steps=4 format=3 uid="uid://c1vg7u6rg0yd6"]
+
+[ext_resource type="Script" path="res://Scenes/HUD/HUD.gd" id="1_iuu84"]
+[ext_resource type="Theme" uid="uid://di0p2ll65b4pb" path="res://Theme.tres" id="1_o1klu"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vjrv3"]
+
+[node name="HUD" type="Control" node_paths=PackedStringArray("title_label", "player_1_label", "player_2_label", "turn_label")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+theme = ExtResource("1_o1klu")
+script = ExtResource("1_iuu84")
+title_label = NodePath("Container/Panel/Panel/Title")
+player_1_label = NodePath("Container/HBoxContainer/MarginContainer/Player1NameScore")
+player_2_label = NodePath("Container/HBoxContainer/MarginContainer2/Player2NameScore")
+turn_label = NodePath("BoxContainer/Panel/Cards")
+
+[node name="Container" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 439.0
+offset_bottom = -39.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="Container"]
+custom_minimum_size = Vector2(100, 60)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_vjrv3")
+
+[node name="Panel" type="Panel" parent="Container/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 361.0
+offset_top = 108.0
+offset_right = -320.0
+offset_bottom = 108.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Title" type="Label" parent="Container/Panel/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 6
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 45
+text = "Turn
+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Container"]
+layout_mode = 2
+size_flags_vertical = 10
+
+[node name="MarginContainer" type="MarginContainer" parent="Container/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Player1NameScore" type="Label" parent="Container/HBoxContainer/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 32
+text = "Bobby: 0
+"
+
+[node name="MarginContainer2" type="MarginContainer" parent="Container/HBoxContainer"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Player2NameScore" type="Label" parent="Container/HBoxContainer/MarginContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 32
+text = "Bobby: 0"
+horizontal_alignment = 2
+
+[node name="BoxContainer" type="BoxContainer" parent="."]
+layout_mode = 0
+offset_top = 40.0
+offset_right = 1153.0
+offset_bottom = 82.0
+alignment = 1
+
+[node name="Panel" type="Panel" parent="BoxContainer"]
+custom_minimum_size = Vector2(300, 10)
+layout_mode = 2
+
+[node name="Cards" type="Label" parent="BoxContainer/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Deck Left: "
+horizontal_alignment = 1
+vertical_alignment = 1

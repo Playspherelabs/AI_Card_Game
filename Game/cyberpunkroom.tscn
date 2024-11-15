@@ -1,0 +1,53 @@
+[gd_scene load_steps=2 format=3 uid="uid://dsf7o53covagc"]
+
+[ext_resource type="PackedScene" uid="uid://cdljkhaf4qs21" path="res://Assets/cyberpunk.glb" id="1_svmr1"]
+
+[node name="CyberPunkRoom" instance=ExtResource("1_svmr1")]
+
+[node name="Sketchfab_model" parent="." index="0"]
+transform = Transform3D(-2.31989e-08, -0.530729, 1.17846e-16, 0, 1.17846e-16, 0.530729, -0.530729, 2.31989e-08, -5.15119e-24, -0.00374126, -0.251841, 0.0349414)
+
+[node name="Object_5" parent="Sketchfab_model/creo que este si_obj_cleaner_materialmerger_gles" index="3"]
+visible = false
+
+[node name="Object_10" parent="Sketchfab_model/creo que este si_obj_cleaner_materialmerger_gles" index="8"]
+visible = false
+
+[node name="Object_15" parent="Sketchfab_model/creo que este si_obj_cleaner_materialmerger_gles" index="13"]
+transform = Transform3D(1, 0, 0, 0, 1, -4.24257e-31, 0, -4.24257e-31, 1, 2.27043, 6.33764, 0.239589)
+
+[node name="Object_18" parent="Sketchfab_model/creo que este si_obj_cleaner_materialmerger_gles" index="16"]
+visible = false
+
+[node name="Object_21" parent="Sketchfab_model/creo que este si_obj_cleaner_materialmerger_gles" index="19"]
+transform = Transform3D(1, 0, 0, 0, 1, -4.24257e-31, 0, -4.24257e-31, 1, 1.50352, 5.33964, 1.2219e-06)
+
+[node name="Object_23" parent="Sketchfab_model/creo que este si_obj_cleaner_materialmerger_gles" index="21"]
+transform = Transform3D(1, 0, 0, 0, 1, -4.24257e-31, 0, -4.24257e-31, 1, -0.0625088, 0.0300911, -0.0481052)
+
+[node name="Object_26" parent="Sketchfab_model/creo que este si_obj_cleaner_materialmerger_gles" index="24"]
+transform = Transform3D(1, 0, 0, 0, 1, -4.24257e-31, 0, -4.24257e-31, 1, -0.0173429, 0.0039568, -0.0205351)
+visible = false
+
+[node name="Object_27" parent="Sketchfab_model/creo que este si_obj_cleaner_materialmerger_gles" index="25"]
+transform = Transform3D(1, 0, 0, 0, 1, -4.24257e-31, 0, -4.24257e-31, 1, 1.58527, 5.19122, 0)
+
+[node name="OmniLight3D" type="OmniLight3D" parent="." index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+light_color = Color(0.867063, 0.210633, 1, 1)
+
+[node name="OmniLight3D2" type="OmniLight3D" parent="." index="2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.27799, 3.17865, 0.550523)
+light_color = Color(0.867063, 0.210633, 1, 1)
+
+[node name="OmniLight3D3" type="OmniLight3D" parent="." index="3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.27799, 3.17865, -0.450088)
+light_color = Color(0.867063, 0.210633, 1, 1)
+
+[node name="OmniLight3D4" type="OmniLight3D" parent="." index="4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.27799, 3.17865, 1.72127)
+light_color = Color(0.867063, 0.210633, 1, 1)
+
+[node name="OmniLight3D5" type="OmniLight3D" parent="." index="5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.09476, 3.66588, -6.72098)
+light_color = Color(1, 0, 0.076571, 1)

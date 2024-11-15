@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://b3ifu6b1l72hs"]
+
+[ext_resource type="PackedScene" uid="uid://f4p3bod0oq13" path="res://Assets/Rooms/medieval_isometric_room_-_low_poly.glb" id="1_d22j2"]
+
+[node name="Sketchfab_Scene" instance=ExtResource("1_d22j2")]
+
+[node name="Object_11" parent="Sketchfab_model/f21a48e9b23b4b69ab1f923052096341_3ds" index="9"]
+transform = Transform3D(0.0222336, -0.999753, 0, 0.999753, 0.0222336, 0, 0, 0, 1, 47.5423, -15.6039, 0)
