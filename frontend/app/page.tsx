@@ -1,307 +1,230 @@
-'use client';
-import { useEffect, useState } from 'react';
-import { useAccount, useDisconnect } from 'wagmi';
+// App.ts
+// x
+"use client"
+import { useEffect, useState, useRef } from 'react';
+import { WagmiProvider} from 'wagmi';
 import { usePrivy } from '@privy-io/react-auth';
-import { useReadContract, useWriteContract } from 'wagmi';
-import Button from 'components/Button';
+import { useAccount, useDisconnect, useWriteContract } from 'wagmi';
 import { parseEther } from 'viem';
 import {abi} from "./abi";
-const GameState = {
-  MATCHING: 0,
-  CARD_DISTRIBUTION: 1,
-  SWAP_PHASE: 2,
-  TOSS_PHASE: 3,
-  BATTLE_PHASE: 4,
-  SETTLEMENT: 5
-};
+// Types for Godot communication
+interface GodotMessage {
+  type: string;
+  data?: any;
+}
 
-const GameMode = {
-  NONE: 0,
-  BULL_MARKET: 1,
-  BEAR_MARKET: 2
-};
-
-export default function ChainSmashPage() {
+function App() {
   const { ready, authenticated, login, logout } = usePrivy();
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
-  
-  const [gameId, setGameId] = useState('');
-  const [entryFee, setEntryFee] = useState('0.01');
-  const [scores, setScores] = useState({ player1: '0', player2: '0' });
-  const [loading, setLoading] = useState(false);
- const contractABI = abi; 
-  const contractAddress = "0xFA443F4E9F7A22dcaBD87bc70B04cc00470a40ff";
-
-  // Contract read operations
-  const { data: gameDetails } = useReadContract({
-    address: contractAddress,
-    abi: contractABI,
-    functionName: 'games',
-    args: [gameId ? BigInt(gameId) : BigInt(0)],
-    enabled: !!gameId
-  });
-
-  // Contract write operations
-  const { writeContract: createGame } = useWriteContract();
-  const { writeContract: joinGame } = useWriteContract();
-  const { writeContract: toss } = useWriteContract();
-  const { writeContract: selectGameMode } = useWriteContract();
-  const { writeContract: concede } = useWriteContract();
-  const { writeContract: submitScores } = useWriteContract();
-
-  const handleCreateGame = async () => {
-    try {
-      setLoading(true);
-      await createGame({
-        address: contractAddress,
-        abi: contractABI,
-        functionName: 'createGame',
-        value: parseEther(entryFee)
-      });
-    } catch (error) {
-      console.error('Error creating game:', error);
-    } finally {
-      setLoading(false);
+  const { writeContract } = useWriteContract();
+  const godotIframeRef = useRef<HTMLIFrameElement>(null);
+  const ChainSmashABI = abi;
+  // Function to send messages to Godot
+  const sendToGodot = (message: GodotMessage) => {
+    if (godotIframeRef.current?.contentWindow) {
+      godotIframeRef.current.contentWindow.postMessage(message, '*');
     }
   };
 
-  const handleJoinGame = async () => {
-    try {
-      setLoading(true);
-      await joinGame({
-        address: contractAddress,
-        abi: contractABI,
-        functionName: 'joinGame',
-        args: [BigInt(gameId)],
-        value: parseEther(entryFee)
-      });
-    } catch (error) {
-      console.error('Error joining game:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Initialize bridge functions
+  useEffect(() => {
+    if (!ready) return;
 
-  const handleToss = async () => {
-    try {
-      setLoading(true);
-      await toss({
-        address: contractAddress,
-        abi: contractABI,
-        functionName: 'toss',
-        args: [BigInt(gameId)]
-      });
-    } catch (error) {
-      console.error('Error performing toss:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Bridge functions for direct Godot calls
+    window.chainSmashBridge = {
+      // Wallet functions
+      async connectWallet() {
+        try {
+          if (!authenticated) {
+            await login();
+          }
+          return { success: true, address };
+        } catch (error) {
+          console.error('Error connecting wallet:', error);
+          return { success: false, error: 'Failed to connect wallet' };
+        }
+      },
 
-  const handleSelectGameMode = async (mode) => {
-    try {
-      setLoading(true);
-      await selectGameMode({
-        address: contractAddress,
-        abi: contractABI,
-        functionName: 'selectGameMode',
-        args: [BigInt(gameId), mode]
-      });
-    } catch (error) {
-      console.error('Error selecting game mode:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      async disconnectWallet() {
+        try {
+          await disconnect();
+          await logout();
+          return { success: true };
+        } catch (error) {
+          console.error('Error disconnecting wallet:', error);
+          return { success: false, error: 'Failed to disconnect wallet' };
+        }
+      },
 
-  const handleConcede = async () => {
-    try {
-      setLoading(true);
-      await concede({
-        address: contractAddress,
-        abi: contractABI,
-        functionName: 'concede',
-        args: [BigInt(gameId)]
-      });
-    } catch (error) {
-      console.error('Error conceding game:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      // Game functions
+      async createGame(entryFee: string) {
+        try {
+          if (!isConnected) return { success: false, error: 'Wallet not connected' };
+          
+          const tx = await writeContract({
+            address: process.env.VITE_CONTRACT_ADDRESS as `0x${string}`,
+            abi: ChainSmashABI,
+            functionName: 'createGame',
+            value: parseEther(0)
+          });
+          
+          const receipt = await tx.wait();
+          const event = receipt.logs.find(log => log.eventName === 'GameCreated');
+          
+          if (event) {
+            return { 
+              success: true, 
+              gameId: event.args.gameId.toString() 
+            };
+          }
+          return { success: false, error: 'Game creation failed' };
+        } catch (error) {
+          console.error('Error creating game:', error);
+          return { success: false, error: 'Failed to create game' };
+        }
+      },
 
-  const handleSubmitScores = async () => {
-    try {
-      setLoading(true);
-      await submitScores({
-        address: contractAddress,
-        abi: contractABI,
-        functionName: 'submitScores',
-        args: [
-          BigInt(gameId),
-          BigInt(scores.player1),
-          BigInt(scores.player2)
-        ]
-      });
-    } catch (error) {
-      console.error('Error submitting scores:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      async joinGame(gameId: string, entryFee: string) {
+        try {
+          if (!isConnected) return { success: false, error: 'Wallet not connected' };
 
-  if (!ready) return null;
+          const tx = await writeContract({
+            address: process.env.VITE_CONTRACT_ADDRESS as `0x${string}`,
+            abi: ChainSmashABI,
+            functionName: 'joinGame',
+            args: [BigInt(gameId)],
+            value: parseEther(entryFee)
+          });
+
+          await tx.wait();
+          return { success: true };
+        } catch (error) {
+          console.error('Error joining game:', error);
+          return { success: false, error: 'Failed to join game' };
+        }
+      },
+
+      async performToss(gameId: string) {
+        try {
+          if (!isConnected) return { success: false, error: 'Wallet not connected' };
+
+          const tx = await writeContract({
+            address: process.env.VITE_CONTRACT_ADDRESS as `0x${string}`,
+            abi: ChainSmashABI,
+            functionName: 'toss',
+            args: [BigInt(gameId)]
+          });
+
+          const receipt = await tx.wait();
+          const event = receipt.logs.find(log => log.eventName === 'TossResult');
+
+          if (event) {
+            return { 
+              success: true, 
+              winner: event.args.tossWinner 
+            };
+          }
+          return { success: false, error: 'Toss failed' };
+        } catch (error) {
+          console.error('Error performing toss:', error);
+          return { success: false, error: 'Failed to perform toss' };
+        }
+      },
+
+      async selectGameMode(gameId: string, mode: number) {
+        try {
+          if (!isConnected) return { success: false, error: 'Wallet not connected' };
+
+          const tx = await writeContract({
+            address: process.env.VITE_CONTRACT_ADDRESS as `0x${string}`,
+            abi: ChainSmashABI,
+            functionName: 'selectGameMode',
+            args: [BigInt(gameId), mode]
+          });
+
+          await tx.wait();
+          return { success: true };
+        } catch (error) {
+          console.error('Error selecting game mode:', error);
+          return { success: false, error: 'Failed to select game mode' };
+        }
+      },
+
+      async submitScores(gameId: string, p1Score: string, p2Score: string) {
+        try {
+          if (!isConnected) return { success: false, error: 'Wallet not connected' };
+
+          const tx = await writeContract({
+            address: process.env.VITE_CONTRACT_ADDRESS as `0x${string}`,
+            abi: ChainSmashABI,
+            functionName: 'submitScores',
+            args: [BigInt(gameId), BigInt(p1Score), BigInt(p2Score)]
+          });
+
+          await tx.wait();
+          return { success: true };
+        } catch (error) {
+          console.error('Error submitting scores:', error);
+          return { success: false, error: 'Failed to submit scores' };
+        }
+      }
+    };
+
+    // Listen for messages from Godot
+    const handleGodotMessage = (event: MessageEvent) => {
+      if (!event.data?.type) return;
+
+      switch (event.data.type) {
+        case 'CONNECT_WALLET':
+          window.chainSmashBridge.connectWallet()
+            .then(result => sendToGodot({ 
+              type: 'WALLET_CONNECTED', 
+              data: result 
+            }));
+          break;
+
+        case 'DISCONNECT_WALLET':
+          window.chainSmashBridge.disconnectWallet()
+            .then(result => sendToGodot({ 
+              type: 'WALLET_DISCONNECTED', 
+              data: result 
+            }));
+          break;
+
+        // Add other message handlers as needed
+      }
+    };
+
+    window.addEventListener('message', handleGodotMessage);
+    return () => window.removeEventListener('message', handleGodotMessage);
+  }, [ready, authenticated, isConnected, address]);
 
   return (
-    <div className="min-h-screen bg-slate-100 p-6">
-      <div className="max-w-4xl mx-auto">
-        {/* Authentication Section */}
-        <div className="mb-8 flex justify-between items-center">
-          <div className="flex gap-4">
-            {!authenticated ? (
-              <Button 
-                cta="Connect Wallet" 
-                onClick_={login}
-                disabled={loading} 
-              />
-            ) : (
-              <>
-                <span className="font-mono bg-slate-200 px-3 py-2 rounded">
-                  {address?.slice(0, 6)}...{address?.slice(-4)}
-                </span>
-                <Button 
-                  cta="Disconnect" 
-                  onClick_={() => {
-                    disconnect();
-                    logout();
-                  }}
-                  disabled={loading}
-                />
-              </>
-            )}
-          </div>
-        </div>
-
-        {authenticated && (
-          <div className="space-y-8">
-            {/* Create Game Section */}
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-xl font-bold mb-4">Create New Game</h2>
-              <div className="flex gap-4 items-center">
-                <input
-                  type="text"
-                  value={entryFee}
-                  onChange={(e) => setEntryFee(e.target.value)}
-                  className="border rounded px-3 py-2 w-32"
-                  placeholder="Entry Fee (ETH)"
-                />
-                <Button
-                  cta="Create Game"
-                  onClick_={handleCreateGame}
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            {/* Join Game Section */}
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-xl font-bold mb-4">Join Game</h2>
-              <div className="flex gap-4 items-center">
-                <input
-                  type="text"
-                  value={gameId}
-                  onChange={(e) => setGameId(e.target.value)}
-                  className="border rounded px-3 py-2 w-32"
-                  placeholder="Game ID"
-                />
-                <Button
-                  cta="Join Game"
-                  onClick_={handleJoinGame}
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            {/* Game Actions Section */}
-            {gameId && (
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-xl font-bold mb-4">Game Actions</h2>
-                <div className="space-y-4">
-                  {/* Toss */}
-                  <div>
-                    <Button
-                      cta="Perform Toss"
-                      onClick_={handleToss}
-                      disabled={loading || !gameDetails?.state === GameState.CARD_DISTRIBUTION}
-                    />
-                  </div>
-
-                  {/* Select Game Mode */}
-                  <div className="flex gap-4">
-                    <Button
-                      cta="Select Bull Market"
-                      onClick_={() => handleSelectGameMode(GameMode.BULL_MARKET)}
-                      disabled={loading || !gameDetails?.state === GameState.TOSS_PHASE}
-                    />
-                    <Button
-                      cta="Select Bear Market"
-                      onClick_={() => handleSelectGameMode(GameMode.BEAR_MARKET)}
-                      disabled={loading || !gameDetails?.state === GameState.TOSS_PHASE}
-                    />
-                  </div>
-
-                  {/* Submit Scores */}
-                  <div className="space-y-2">
-                    <div className="flex gap-4 items-center">
-                      <input
-                        type="text"
-                        value={scores.player1}
-                        onChange={(e) => setScores(prev => ({ ...prev, player1: e.target.value }))}
-                        className="border rounded px-3 py-2 w-32"
-                        placeholder="Player 1 Score"
-                      />
-                      <input
-                        type="text"
-                        value={scores.player2}
-                        onChange={(e) => setScores(prev => ({ ...prev, player2: e.target.value }))}
-                        className="border rounded px-3 py-2 w-32"
-                        placeholder="Player 2 Score"
-                      />
-                    </div>
-                    <Button
-                      cta="Submit Scores"
-                      onClick_={handleSubmitScores}
-                      disabled={loading || !gameDetails?.state === GameState.BATTLE_PHASE}
-                    />
-                  </div>
-
-                  {/* Concede */}
-                  <div>
-                    <Button
-                      cta="Concede Game"
-                      onClick_={handleConcede}
-                      disabled={loading || gameDetails?.state === GameState.SETTLEMENT}
-                      className="bg-red-500 hover:bg-red-600"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Game Details Section */}
-            {gameDetails && (
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-xl font-bold mb-4">Game Details</h2>
-                <div className="space-y-2">
-                  <p><strong>Player 1:</strong> {gameDetails.player1}</p>
-                  <p><strong>Toss Winner:</strong> {gameDetails.tossWinner}</p>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+      <div className="w-screen h-screen bg-gray-900">
+        <iframe
+          ref={godotIframeRef}
+          src="/godot.html"
+          className="w-full h-full border-none"
+          allow="autoplay"
+        />
       </div>
-    </div>
   );
+}
+
+export default App;
+
+// Add TypeScript declarations
+declare global {
+  interface Window {
+    chainSmashBridge: {
+      connectWallet: () => Promise<{ success: boolean; address?: string; error?: string }>;
+      disconnectWallet: () => Promise<{ success: boolean; error?: string }>;
+      createGame: (entryFee: string) => Promise<{ success: boolean; gameId?: string; error?: string }>;
+      joinGame: (gameId: string, entryFee: string) => Promise<{ success: boolean; error?: string }>;
+      performToss: (gameId: string) => Promise<{ success: boolean; winner?: string; error?: string }>;
+      selectGameMode: (gameId: string, mode: number) => Promise<{ success: boolean; error?: string }>;
+      submitScores: (gameId: string, p1Score: string, p2Score: string) => Promise<{ success: boolean; error?: string }>;
+    };
+  }
 }

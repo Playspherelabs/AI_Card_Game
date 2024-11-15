@@ -752,6 +752,9 @@ select {
 .h-\[calc\(100vh-64px\)\] {
   height: calc(100vh - 64px);
 }
+.h-screen {
+  height: 100vh;
+}
 .min-h-screen {
   min-height: 100vh;
 }
@@ -760,6 +763,9 @@ select {
 }
 .w-32 {
   width: 8rem;
+}
+.w-screen {
+  width: 100vw;
 }
 .min-w-full {
   min-width: 100%;
@@ -904,6 +910,10 @@ select {
 .bg-red-500 {
   --tw-bg-opacity: 1;
   background-color: rgb(239 68 68 / var(--tw-bg-opacity));
+}
+.bg-gray-900 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(17 24 39 / var(--tw-bg-opacity));
 }
 .bg-gradient-to-b {
   background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
