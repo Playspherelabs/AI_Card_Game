@@ -1,8 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://qqr31gwogfkg"]
+[gd_scene load_steps=9 format=3 uid="uid://qqr31gwogfkg"]
 
 [ext_resource type="Script" path="res://Scenes/MainMenuUI/MainMenuUI.gd" id="1_4kj3h"]
 [ext_resource type="Theme" uid="uid://di0p2ll65b4pb" path="res://Theme.tres" id="1_8t26l"]
 [ext_resource type="PackedScene" uid="uid://d1fwtjc2r0xh6" path="res://Assets/Rooms/isometric_japanese_tea_room.glb" id="3_40oes"]
+[ext_resource type="Texture2D" uid="uid://c0ka4yrvud0cm" path="res://Play onchain.svg" id="3_cxw2w"]
 [ext_resource type="PackedScene" uid="uid://dsf7o53covagc" path="res://cyberpunkroom.tscn" id="4_6n8op"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1ofmq"]
@@ -70,8 +71,36 @@ grow_vertical = 2
 theme_override_constants/margin_left = 100
 theme_override_constants/margin_right = 100
 
+[node name="PlayOnchain" type="Sprite2D" parent="MarginContainer"]
+position = Vector2(552, 159)
+texture = ExtResource("3_cxw2w")
+
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
 layout_mode = 2
+
+[node name="Label2" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("1_8t26l")
+theme_override_colors/font_shadow_color = Color(0.85098, 0.533333, 0.870588, 1)
+theme_override_constants/shadow_offset_x = 5
+theme_override_constants/shadow_offset_y = 5
+theme_override_constants/shadow_outline_size = 3
+theme_override_font_sizes/font_size = 80
+text = "
+"
+horizontal_alignment = 1
+
+[node name="Label3" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("1_8t26l")
+theme_override_colors/font_shadow_color = Color(0.85098, 0.533333, 0.870588, 1)
+theme_override_constants/shadow_offset_x = 5
+theme_override_constants/shadow_offset_y = 5
+theme_override_constants/shadow_outline_size = 3
+theme_override_font_sizes/font_size = 40
+text = "
+"
+horizontal_alignment = 1
 
 [node name="Label" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -80,11 +109,13 @@ theme_override_colors/font_shadow_color = Color(0.85098, 0.533333, 0.870588, 1)
 theme_override_constants/shadow_offset_x = 5
 theme_override_constants/shadow_offset_y = 5
 theme_override_constants/shadow_outline_size = 3
-theme_override_font_sizes/font_size = 80
-text = "Emoji Empire"
+theme_override_font_sizes/font_size = 40
+text = "
+"
 horizontal_alignment = 1
 
 [node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+visible = false
 layout_mode = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]

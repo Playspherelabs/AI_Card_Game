@@ -10,11 +10,11 @@ config_version=5
 
 [application]
 
-config/name="EmojiEmpire"
-config/description="EmojiEmpire Card Game - By Argenestel"
+config/name="ChainSmash"
+config/description="ChainSmash Card Game - By Argenestel"
 run/main_scene="res://Scenes/Manager/Manager.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
-config/icon="res://icon.svg"
+config/icon="res://Play onchain.svg"
 
 [autoload]
 
