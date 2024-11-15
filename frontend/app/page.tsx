@@ -1,228 +1,187 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
-/* eslint-disable no-console */
+'use client';
 
-"use client";
+import Balance from 'components/Balance';
+import BlockNumber from 'components/BlockNumber';
+import Button from 'components/Button';
+import ContractEvent from 'components/ContractEvent';
+import ContractRead from 'components/ContractRead';
+import ContractReads from 'components/ContractReads';
+import ContractWrite from 'components/ContractWrite';
+import EnsAddress from 'components/EnsAddress';
+import EnsAvatar from 'components/EnsAvatar';
+import EnsName from 'components/EnsName';
+import EnsResolver from 'components/EnsResolver';
+import FeeData from 'components/FeeData';
+import PublicClient from 'components/PublicClient';
+import SendTransaction from 'components/SendTransaction';
+import SignMessage from 'components/SignMessage';
+import SignTypedData from 'components/SignTypedData';
+import Signer from 'components/Signer';
+import SwitchNetwork from 'components/SwitchNetwork';
+import Token from 'components/Token';
+import Transaction from 'components/Transaction';
+import WaitForTransaction from 'components/WaitForTransaction';
+import WalletClient from 'components/WalletClient';
+import WatchPendingTransactions from 'components/WatchPendingTransactions';
+import {shorten} from 'lib/utils';
+import Image from 'next/image';
+import {useAccount, useDisconnect} from 'wagmi';
 
-// IMP START - Quick Start
-import { CHAIN_NAMESPACES, IAdapter, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
-import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
-import { getDefaultExternalAdapters } from "@web3auth/default-evm-adapter";
-import { Web3Auth, Web3AuthOptions } from "@web3auth/modal";
-// IMP END - Quick Start
-import { useEffect, useState } from "react";
+import {usePrivy, useWallets} from '@privy-io/react-auth';
+import {useSetActiveWallet} from '@privy-io/wagmi';
 
-// IMP START - Blockchain Calls
-import RPC from "./ethersRPC";
-// import RPC from "./viemRPC";
-// import RPC from "./web3RPC";
-// IMP END - Blockchain Calls
+import wagmiPrivyLogo from '../public/wagmi_privy_logo.png';
 
-// IMP START - Dashboard Registration
-const clientId = "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ"; // get from https://dashboard.web3auth.io
-// IMP END - Dashboard Registration
-
-// IMP START - Chain Config
-const chainConfig = {
-  chainNamespace: CHAIN_NAMESPACES.EIP155,
-  chainId: "0xaa36a7",
-  rpcTarget: "https://rpc.ankr.com/eth_sepolia",
-  // Avoid using public rpcTarget in production.
-  // Use services like Infura, Quicknode etc
-  displayName: "Ethereum Sepolia Testnet",
-  blockExplorerUrl: "https://sepolia.etherscan.io",
-  ticker: "ETH",
-  tickerName: "Ethereum",
-  logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png",
+const MonoLabel = ({label}: {label: string}) => {
+  return <span className="rounded-xl bg-slate-200 px-2 py-1 font-mono">{label}</span>;
 };
-// IMP END - Chain Config
 
-// IMP START - SDK Initialization
-const privateKeyProvider = new EthereumPrivateKeyProvider({
-  config: { chainConfig },
-});
+export default function Home() {
+  // Privy hooks
+  const {ready, user, authenticated, login, connectWallet, logout, linkWallet} = usePrivy();
+  const {wallets, ready: walletsReady} = useWallets();
 
-const web3AuthOptions: Web3AuthOptions = {
-  clientId,
-  web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_MAINNET,
-  privateKeyProvider,
-}
-const web3auth = new Web3Auth(web3AuthOptions);
-// IMP END - SDK Initialization
+  // WAGMI hooks
+  const {address, isConnected, isConnecting, isDisconnected} = useAccount();
+  const {disconnect} = useDisconnect();
+  const {setActiveWallet} = useSetActiveWallet();
 
-function App() {
-  const [provider, setProvider] = useState<IProvider | null>(null);
-  const [loggedIn, setLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const init = async () => {
-      try {
-        // IMP START - Configuring External Wallets
-        const adapters = await getDefaultExternalAdapters({ options: web3AuthOptions });
-        adapters.forEach((adapter: IAdapter<unknown>) => {
-          web3auth.configureAdapter(adapter);
-        });
-        // IMP END - Configuring External Wallets
-        // IMP START - SDK Initialization
-        await web3auth.initModal();
-        // IMP END - SDK Initialization
-        setProvider(web3auth.provider);
-
-        if (web3auth.connected) {
-          setLoggedIn(true);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    init();
-  }, []);
-
-  const login = async () => {
-    // IMP START - Login
-    const web3authProvider = await web3auth.connect();
-    // IMP END - Login
-    setProvider(web3authProvider);
-    if (web3auth.connected) {
-      setLoggedIn(true);
-    }
-  };
-
-  const getUserInfo = async () => {
-    // IMP START - Get User Information
-    const user = await web3auth.getUserInfo();
-    // IMP END - Get User Information
-    uiConsole(user);
-  };
-
-  const logout = async () => {
-    // IMP START - Logout
-    await web3auth.logout();
-    // IMP END - Logout
-    setProvider(null);
-    setLoggedIn(false);
-    uiConsole("logged out");
-  };
-
-  // IMP START - Blockchain Calls
-  // Check the RPC file for the implementation
-  const getAccounts = async () => {
-    if (!provider) {
-      uiConsole("provider not initialized yet");
-      return;
-    }
-    const address = await RPC.getAccounts(provider);
-    uiConsole(address);
-  };
-
-  const getBalance = async () => {
-    if (!provider) {
-      uiConsole("provider not initialized yet");
-      return;
-    }
-    const balance = await RPC.getBalance(provider);
-    uiConsole(balance);
-  };
-
-  const signMessage = async () => {
-    if (!provider) {
-      uiConsole("provider not initialized yet");
-      return;
-    }
-    const signedMessage = await RPC.signMessage(provider);
-    uiConsole(signedMessage);
-  };
-
-  const sendTransaction = async () => {
-    if (!provider) {
-      uiConsole("provider not initialized yet");
-      return;
-    }
-    uiConsole("Sending Transaction...");
-    const transactionReceipt = await RPC.sendTransaction(provider);
-    uiConsole(transactionReceipt);
-  };
-  // IMP END - Blockchain Calls
-
-  function uiConsole(...args: any[]): void {
-    const el = document.querySelector("#console>p");
-    if (el) {
-      el.innerHTML = JSON.stringify(args || {}, null, 2);
-      console.log(...args);
-    }
+  if (!ready) {
+    return null;
   }
 
-  const loggedInView = (
+  return (
     <>
-      <div className="flex-container">
-        <div>
-          <button onClick={getUserInfo} className="card">
-            Get User Info
-          </button>
+      <main className="min-h-screen bg-slate-200 p-4 text-slate-800">
+        <Image
+          className="mx-auto rounded-lg"
+          src={wagmiPrivyLogo}
+          alt="wagmi x privy logo"
+          width={400}
+          height={100}
+        />
+        <p className="my-4 text-center">
+          This demo showcases how you can integrate{' '}
+          <a href="https://wagmi.sh/" className="font-medium underline">
+            wagmi
+          </a>{' '}
+          alongside{' '}
+          <a href="https://www.privy.io/" className="font-medium underline">
+            Privy
+          </a>{' '}
+          in your React app. Login below to try it out!
+          <br />
+          For more information, check out{' '}
+          <a href="https://docs.privy.io/guide/guides/wagmi" className="font-medium underline">
+            our integration guide
+          </a>{' '}
+          or the{' '}
+          <a href="https://github.com/privy-io/wagmi-demo" className="font-medium underline">
+            source code
+          </a>{' '}
+          for this app.
+        </p>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="border-1 flex flex-col items-start gap-2 rounded border border-black bg-slate-100 p-3">
+            <h1 className="text-4xl font-bold">Privy</h1>
+            {ready && !authenticated && (
+              <>
+                <p>You are not authenticated with Privy</p>
+                <div className="flex items-center gap-4">
+                  <Button onClick_={login} cta="Login with Privy" />
+                  <span>or</span>
+                  <Button onClick_={connectWallet} cta="Connect only" />
+                </div>
+              </>
+            )}
+
+            {walletsReady &&
+              wallets.map((wallet) => {
+                return (
+                  <div
+                    key={wallet.address}
+                    className="flex min-w-full flex-row flex-wrap items-center justify-between gap-2 bg-slate-50 p-4"
+                  >
+                    <div>
+                      <MonoLabel label={shorten(wallet.address)} />
+                    </div>
+                    <Button
+                      cta="Make active"
+                      onClick_={() => {
+                        setActiveWallet(wallet);
+                      }}
+                    />
+                  </div>
+                );
+              })}
+
+            {ready && authenticated && (
+              <>
+                <p className="mt-2">You are logged in with privy.</p>
+                <Button onClick_={connectWallet} cta="Connect another wallet" />
+                <Button onClick_={linkWallet} cta="Link another wallet" />
+                <textarea
+                  value={JSON.stringify(wallets, null, 2)}
+                  className="mt-2 w-full rounded-md bg-slate-700 p-4 font-mono text-xs text-slate-50 sm:text-sm"
+                  rows={JSON.stringify(wallets, null, 2).split('\n').length}
+                  disabled
+                />
+                <br />
+                <textarea
+                  value={JSON.stringify(user, null, 2)}
+                  className="mt-2 w-full rounded-md bg-slate-700 p-4 font-mono text-xs text-slate-50 sm:text-sm"
+                  rows={JSON.stringify(user, null, 2).split('\n').length}
+                  disabled
+                />
+                <br />
+                <Button onClick_={logout} cta="Logout from Privy" />
+              </>
+            )}
+          </div>
+          <div className="border-1 flex flex-col items-start gap-2 rounded border border-black bg-slate-100 p-3">
+            <h1 className="text-4xl font-bold">WAGMI</h1>
+            <p>
+              Connection status: {isConnecting && <span>🟡 connecting...</span>}
+              {isConnected && <span>🟢 connected.</span>}
+              {isDisconnected && <span> 🔴 disconnected.</span>}
+            </p>
+            {isConnected && address && (
+              <>
+                <h2 className="mt-6 text-2xl">useAccount</h2>
+                <p>
+                  address: <MonoLabel label={address} />
+                </p>
+
+                <Balance />
+                <Signer />
+                <SignMessage />
+                <SignTypedData />
+                <PublicClient />
+                <EnsName />
+                <EnsAddress />
+                <EnsAvatar />
+                <EnsResolver />
+                <SwitchNetwork />
+                <BlockNumber />
+                <SendTransaction />
+                <ContractRead />
+                <ContractReads />
+                <ContractWrite />
+                <ContractEvent />
+                <FeeData />
+                <Token />
+                <Transaction />
+                <WatchPendingTransactions />
+                <WalletClient />
+                <WaitForTransaction />
+
+                <h2 className="mt-6 text-2xl">useDisconnect</h2>
+                <Button onClick_={disconnect} cta="Disconnect from WAGMI" />
+              </>
+            )}
+          </div>
         </div>
-        <div>
-          <button onClick={getAccounts} className="card">
-            Get Accounts
-          </button>
-        </div>
-        <div>
-          <button onClick={getBalance} className="card">
-            Get Balance
-          </button>
-        </div>
-        <div>
-          <button onClick={signMessage} className="card">
-            Sign Message
-          </button>
-        </div>
-        <div>
-          <button onClick={sendTransaction} className="card">
-            Send Transaction
-          </button>
-        </div>
-        <div>
-          <button onClick={logout} className="card">
-            Log Out
-          </button>
-        </div>
-      </div>
+      </main>
     </>
   );
-
-  const unloggedInView = (
-    <button onClick={login} className="card">
-      Login
-    </button>
-  );
-
-  return (
-    <div className="container">
-      <h1 className="title">
-        <a target="_blank" href="https://web3auth.io/docs/sdk/pnp/web/modal" rel="noreferrer">
-          Web3Auth{" "}
-        </a>
-        & NextJS Quick Start
-      </h1>
-
-      <div className="grid">{loggedIn ? loggedInView : unloggedInView}</div>
-      <div id="console" style={{ whiteSpace: "pre-line" }}>
-        <p style={{ whiteSpace: "pre-line" }}></p>
-      </div>
-
-      <footer className="footer">
-        <a
-          href="https://github.com/Web3Auth/web3auth-pnp-examples/tree/main/web-modal-sdk/quick-starts/nextjs-modal-quick-start"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Source code
-        </a>
-        <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FWeb3Auth%2Fweb3auth-pnp-examples%2Ftree%2Fmain%2Fweb-modal-sdk%2Fquick-starts%2Fnextjs-modal-quick-start&project-name=w3a-nextjs-modal&repository-name=w3a-nextjs-modal">
-          <img src="https://vercel.com/button" alt="Deploy with Vercel" />
-        </a>
-      </footer>
-    </div>
-  );
 }
-
-export default App;

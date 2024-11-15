@@ -1,41 +1,38 @@
-# Web3Auth (`@web3auth/modal`) x EVM x Next.js
+# Privy x Wagmi Demo
 
-[![Web3Auth](https://img.shields.io/badge/Web3Auth-SDK-blue)](https://web3auth.io/docs/sdk/pnp/web/modal)
-[![Web3Auth](https://img.shields.io/badge/Web3Auth-Community-cyan)](https://community.web3auth.io)
+This is a demo NextJS app that uses both [`wagmi`](https://wagmi.sh/) and [Privy](https://www.privy.io/), connecting them with the [`@privy-io/wagmi`](https://www.npmjs.com/package/@privy-io/wagmi) package. 
 
-[Join our Community Portal](https://community.web3auth.io/) to get support and stay up to date with the latest news and updates.
+To try the demo, go to https://wagmi-app.vercel.app/ and login with Privy. As part of login, you'll either connect an external wallet (e.g. MetaMask) or create an embedded wallet associated with your login method. Once connected, click the buttons in the right sidebar to invoke various [`wagmi`](https://wagmi.sh/) hooks, like `useSignMessage`, to interface with your connected wallet. 
 
-This example demonstrates how to use Web3Auth with EVM in Next.js
+**Check out our [`wagmi` integration guide](https://docs.privy.io/guide/guides/wagmi) for more guidance!**
 
-## How to Use
+## Setup
 
-### One-Click Deploy to Vercel
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FWeb3Auth%2Fweb3auth-pnp-examples%2Ftree%2Fmain%2Fweb-modal-sdk%2Fquick-starts%2Fnextjs-modal-quick-start&project-name=w3a-nextjs-modal&repository-name=w3a-nextjs-modal)
-
-### Download Manually
-
-```bash
-npx degit Web3Auth/web3auth-pnp-examples/web-modal-sdk/quick-starts/nextjs-modal-quick-start w3a-example
+1. Fork this repository, clone it, and open it in your terminal.
+```sh
+git clone https://github.com/<your-github-handle>/wagmi-demo
 ```
 
-Install & Run:
-
-```bash
-cd w3a-example
-npm install
-npm run dev
-# or
-cd w3a-example
-yarn
-yarn dev
+2. Install the necessary dependencies with `npm`.
+```sh
+npm i 
 ```
 
-## Important Links
+3. Initialize your environment variables by copying the `.env.example` file to an `.env.local` file. Then, in `.env.local`, paste your **Privy App ID** from the [Privy console](https://console.privy.io) and an [**Alchemy API Key**](https://www.alchemy.com/). 
+```sh
+# In your terminal, create .env.local from .env.local.example
+cp .env.local.example .env.local
 
-- [Website](https://web3auth.io)
-- [Docs](https://web3auth.io/docs)
-- [Guides](https://web3auth.io/docs/guides)
-- [SDK / API References](https://web3auth.io/docs/sdk)
-- [Pricing](https://web3auth.io/pricing.html)
-- [Community Portal](https://community.web3auth.io)
+# Add your Privy App ID to .env.local
+NEXT_PUBLIC_PRIVY_APP_ID=<your-privy-app-id>
+NEXT_PUBLIC_ALCHEMY_API_KEY=<your-alchemy-api-key>
+```
+
+## Building locally
+
+In your project directory, run `npm run dev`. You can now visit http://localhost:4000 to see your app and login with Privy!
+
+## Check out:
+- `app/page.tsx` for how to connect external wallets and create embedded wallets using Privy
+- `components/providers.tsx` for how to wrap your app with the `PrivyProvider`, `WagmiProvider`, and `QueryClientProvider`
+- `components/*.tsx` for examples of calling `wagmi` hooks. The components are named after hook they call; for example, `components/SignMessage.tsx` calls the `useSignMessage` hook. 
