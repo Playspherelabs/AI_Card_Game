@@ -262,6 +262,7 @@ func play_card_client(dz_name: StringName, card_name: String) -> void:
 	Global.selected_table_card_name = ""
 	refresh_outlines()
 
+	card._on_dropzone()
 	card_player.play()
 	var tween = get_tree().create_tween()
 	tween.tween_property(card, "global_rotation_degrees", Vector3(0, 90, 0), .5)

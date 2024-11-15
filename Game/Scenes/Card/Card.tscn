@@ -1,6 +1,7 @@
-[gd_scene load_steps=15 format=4 uid="uid://devwxftahvhgy"]
+[gd_scene load_steps=16 format=4 uid="uid://devwxftahvhgy"]
 
 [ext_resource type="Script" path="res://Scenes/Card/Card.gd" id="1_l8dkh"]
+[ext_resource type="Texture2D" uid="uid://bivpcar0bdlne" path="res://Cards/cardsleve.png" id="2_56cqv"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_085qu"]
 resource_local_to_scene = true
@@ -41,6 +42,7 @@ shadow_mesh = SubResource("ArrayMesh_uc4p3")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4rir8"]
 resource_local_to_scene = true
+albedo_texture = ExtResource("2_56cqv")
 metallic = 0.2
 roughness = 0.0
 
@@ -116,11 +118,12 @@ shadow_mesh = SubResource("ArrayMesh_vjjdg")
 [sub_resource type="BoxShape3D" id="BoxShape3D_1yfug"]
 size = Vector3(0.41414, 0.023, 0.533575)
 
-[node name="Card" type="Area3D" node_paths=PackedStringArray("plane_mesh", "outline_mesh", "card_mesh") groups=["card"]]
+[node name="Card" type="Area3D" node_paths=PackedStringArray("plane_mesh", "outline_mesh", "card_mesh", "card_sleve") groups=["card"]]
 script = ExtResource("1_l8dkh")
 plane_mesh = NodePath("Plane")
 outline_mesh = NodePath("Outline")
 card_mesh = NodePath("Card")
+card_sleve = NodePath("CardSleve")
 
 [node name="Card" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0, 0, 0)
@@ -128,13 +131,13 @@ material_override = SubResource("StandardMaterial3D_085qu")
 mesh = SubResource("ArrayMesh_unahp")
 skeleton = NodePath("")
 
-[node name="Plane" type="MeshInstance3D" parent="."]
+[node name="CardSleve" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.764, 0, 0, 0, 0.78, 0, 0, 0, 1.007, 0, 0.00973198, 0)
 material_override = SubResource("StandardMaterial3D_4rir8")
 mesh = SubResource("ArrayMesh_7ccqj")
 skeleton = NodePath("")
 
-[node name="CardSleve" type="MeshInstance3D" parent="."]
+[node name="Plane" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.764, 0, 0, 0, 0.78, 0, 0, 0, 1.007, 0, 0.00973198, 0)
 material_override = SubResource("StandardMaterial3D_4rir8")
 mesh = SubResource("ArrayMesh_7ccqj")

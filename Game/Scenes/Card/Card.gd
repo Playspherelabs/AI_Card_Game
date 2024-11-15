@@ -7,6 +7,7 @@ signal select()
 @export var card_mesh: MeshInstance3D
 @export var card_resource: CardResource
 @export var card_sleve: MeshInstance3D
+
 var zone: Global.CARD_ZONE = Global.CARD_ZONE.DECK
 var last_click_time: float = 0
 const DOUBLE_CLICK_TIME: float = 0.3  # Time window for double click in seconds
@@ -14,10 +15,20 @@ const DOUBLE_CLICK_TIME: float = 0.3  # Time window for double click in seconds
 func _ready():
 	card_mesh.material_override.albedo_color = card_resource.color
 	plane_mesh.material_override.albedo_texture = card_resource.texture
+	
 	%Zoomed.texture = card_resource.texture
 	# Set image initially hidden
 	%Zoomed.visible = false
+	card_sleve.hide()
 	render_outline()
+
+func _on_hand():
+	card_sleve.hide()
+	plane_mesh.show()
+
+func _on_dropzone():
+	card_sleve.show()
+	plane_mesh.hide()
 
 func _on_input_event(_camera, event: InputEvent, _position, _normal, _shape_idx):
 	if event is InputEventMouseButton:
