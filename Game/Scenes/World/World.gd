@@ -43,9 +43,6 @@ var intro_done = false
 ## all clients
 var synced_player_turn: PLAYER = PLAYER.ONE
 var synced_peer_name_map: Dictionary = {}
-
-## Vars prepended with "server" are only available
-## on the server
 var server_peers_intro_done: Array[int] = []
 var server_peers_start_cards_tween_done: Array[int] = []
 	
@@ -386,7 +383,7 @@ func switch_card_server(table_card_name: String, hand_card_name: String) -> void
 		return
 	
 	print("Peer %s has switched card %s with card on table %s" % [id, hand_card_name, table_card_name])
-	switch_card_client.rpc(table_card_name, hand_card_name)
+	## switch_card_client.rpc(table_card_name, hand_card_name)
 
 @rpc
 func update_scores(p1_score: int, p2_score: int) -> void:

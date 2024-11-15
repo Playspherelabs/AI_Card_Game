@@ -6,7 +6,7 @@ signal select()
 @export var outline_mesh: MeshInstance3D
 @export var card_mesh: MeshInstance3D
 @export var card_resource: CardResource
-
+@export var card_sleve: MeshInstance3D
 var zone: Global.CARD_ZONE = Global.CARD_ZONE.DECK
 var last_click_time: float = 0
 const DOUBLE_CLICK_TIME: float = 0.3  # Time window for double click in seconds
